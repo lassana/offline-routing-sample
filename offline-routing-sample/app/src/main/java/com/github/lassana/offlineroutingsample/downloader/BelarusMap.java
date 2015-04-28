@@ -20,13 +20,13 @@ public abstract class BelarusMap {
     private static final String DIR_OFFLINE_MAPS_DATA = "offline_maps";
 
     public static final long MAP_SIZE = 132837770;
-    public static final String MAP_FILE_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/belarus.map?raw=true";
-    public static final String EDGES_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/edges?raw=true";
-    public static final String GEOMETRY_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/geometry?raw=true";
-    public static final String LOCATION_INDEX_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/locationIndex?raw=true";
-    public static final String NAMES_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/names?raw=true";
-    public static final String NODES_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/nodes?raw=true";
-    public static final String PROPERTIES_URL = "https://github.com/lassana/offline-routing-sample/blob/v1/raw/belarus/properties?raw=true";
+    public static final String MAP_FILE_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/belarus.map?raw=true";
+    public static final String EDGES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/edges?raw=true";
+    public static final String GEOMETRY_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/geometry?raw=true";
+    public static final String LOCATION_INDEX_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/locationIndex?raw=true";
+    public static final String NAMES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/names?raw=true";
+    public static final String NODES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/nodes?raw=true";
+    public static final String PROPERTIES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/properties?raw=true";
 
 
     private static File getFilesDir(final Context context) {

@@ -21,7 +21,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:layout_gravity="center"
-                android:text="No map was found"
+                android:text="@string/text_view_no_map"
                 android:drawableLeft="@android:drawable/stat_sys_warning"
                 android:id="@+id/textView2"/>
 
@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="You can download a sample map and routing data from Internet"
+                android:text="@string/text_view_no_map_info"
                 android:gravity="center"
                 android:id="@+id/textView"/>
 
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Download it"
+                android:text="@string/button_download_map"
                 android:id="@+id/button_start_downloading"/>
 
     </LinearLayout>
@@ -52,7 +52,7 @@
                 android:id="@+id/text_view_downloading_progress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Downloading: %d%"
+                android:text="@string/text_view_downloading_progress"
                 android:gravity="center"/>
 
         <ProgressBar
@@ -68,7 +68,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_cancel_downloading"
-                android:text="Cancel"
+                android:text="@string/button_cancel"
                 android:gravity="center"/>
 
     </LinearLayout>

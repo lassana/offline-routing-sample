@@ -1,16 +1,20 @@
 package com.github.lassana.offlineroutingsample.ui;
 
 import android.app.Activity;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
+import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
+import com.github.lassana.offlineroutingsample.downloader.MapDownloaderLoader;
+import com.squareup.otto.Subscribe;
 
 
 /**
@@ -18,10 +22,30 @@ import com.github.lassana.offlineroutingsample.R;
  */
 public class MapDownloaderFragment extends Fragment {
 
+    private static final int LOADER_ID = 0x1;
+
     private MainActivityCallback mActivityCallback;
     private ViewSwitcher mViewSwitcher;
     private TextView mDownloadingProgressTextView;
     private ProgressBar mDownloadingProgressBar;
+
+    private final LoaderManager.LoaderCallbacks<Void> mLoadManager = new LoaderManager.LoaderCallbacks<Void>() {
+
+        @Override
+        public Loader<Void> onCreateLoader(int id, Bundle args) {
+            return new MapDownloaderLoader(getActivity());
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Void> loader, Void data) {
+            getLoaderManager().destroyLoader(LOADER_ID);
+            mActivityCallback.onMapDownloaded();
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Void> loader) {
+        }
+    };
 
     public MapDownloaderFragment() {
     }
@@ -41,8 +65,20 @@ public class MapDownloaderFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_map_downloader, container, false);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getLoaderManager().destroyLoader(LOADER_ID);
     }
 
     @Override
@@ -63,13 +99,40 @@ public class MapDownloaderFragment extends Fragment {
                 StopDownloading();
             }
         });
+        mViewSwitcher.setDisplayedChild(getLoaderManager().getLoader(LOADER_ID) == null ? 0 : 1);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        App.getApplication(getActivity()).unregisterOttoBus(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        App.getApplication(getActivity()).registerOttoBus(this);
     }
 
     private void StopDownloading() {
+        getLoaderManager().destroyLoader(LOADER_ID);
         mViewSwitcher.setDisplayedChild(0);
     }
 
     private void startDownloading() {
+        getLoaderManager().initLoader(LOADER_ID, null, mLoadManager);
         mViewSwitcher.setDisplayedChild(1);
+    }
+
+    @Subscribe
+    public void answerAvailable(final MapDownloaderLoader.Progress event) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mDownloadingProgressTextView.setText(getString(R.string.text_view_downloading_progress, event.progress));
+                mDownloadingProgressBar.setProgress(event.progress);
+            }
+        });
+
     }
 }

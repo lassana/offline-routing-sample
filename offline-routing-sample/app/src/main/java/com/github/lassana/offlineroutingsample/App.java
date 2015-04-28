@@ -2,8 +2,11 @@ package com.github.lassana.offlineroutingsample;
 
 import android.app.Application;
 import android.content.Context;
+import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
+
+import java.lang.ref.WeakReference;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
@@ -12,6 +15,7 @@ import com.squareup.otto.ThreadEnforcer;
 public class App extends Application {
 
     private Bus mOttoBus;
+    private WeakReference<OkHttpClient> mOkHttpClientWeakReference;
 
     public static App getApplication(Context context) {
         if (context instanceof App) {
@@ -25,6 +29,13 @@ public class App extends Application {
         super.onCreate();
         //AndroidGraphicFactory.createInstance(this);
         mOttoBus = new Bus(ThreadEnforcer.ANY);
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        if (mOkHttpClientWeakReference == null || mOkHttpClientWeakReference.get() == null) {
+            mOkHttpClientWeakReference = new WeakReference<>(new OkHttpClient());
+        }
+        return mOkHttpClientWeakReference.get();
     }
 
     public void registerOttoBus(Object object) {

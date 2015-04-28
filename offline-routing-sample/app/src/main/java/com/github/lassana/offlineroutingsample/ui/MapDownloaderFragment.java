@@ -29,21 +29,20 @@ public class MapDownloaderFragment extends Fragment {
     private TextView mDownloadingProgressTextView;
     private ProgressBar mDownloadingProgressBar;
 
-    private final LoaderManager.LoaderCallbacks<Void> mLoadManager = new LoaderManager.LoaderCallbacks<Void>() {
+    private final LoaderManager.LoaderCallbacks<Boolean> mLoadManager = new LoaderManager.LoaderCallbacks<Boolean>() {
 
         @Override
-        public Loader<Void> onCreateLoader(int id, Bundle args) {
+        public Loader<Boolean> onCreateLoader(int id, Bundle args) {
             return new MapDownloaderLoader(getActivity());
         }
 
         @Override
-        public void onLoadFinished(Loader<Void> loader, Void data) {
+        public void onLoadFinished(Loader<Boolean> loader, Boolean data) {
             getLoaderManager().destroyLoader(LOADER_ID);
-            mActivityCallback.onMapDownloaded();
         }
 
         @Override
-        public void onLoaderReset(Loader<Void> loader) {
+        public void onLoaderReset(Loader<Boolean> loader) {
         }
     };
 

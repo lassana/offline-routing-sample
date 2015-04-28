@@ -5,6 +5,7 @@ import android.content.Context;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
+import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 
 import java.lang.ref.WeakReference;
 
@@ -27,7 +28,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        //AndroidGraphicFactory.createInstance(this);
+        AndroidGraphicFactory.createInstance(this);
         mOttoBus = new Bus(ThreadEnforcer.ANY);
     }
 

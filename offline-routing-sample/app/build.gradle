@@ -29,4 +29,10 @@ dependencies {
     compile project(':graphhopper-wrapper')
     compile 'com.squareup:otto:1.3.6'
     compile 'com.squareup.okhttp:okhttp:2.3.0'
+    compile 'org.osmdroid:osmdroid-android:4.2'
+    compile 'org.mapsforge:mapsforge-core:0.4.3'
+    compile 'org.mapsforge:mapsforge-map:0.4.3'
+    compile 'org.mapsforge:mapsforge-map-android:0.4.3'
+    compile 'org.mapsforge:mapsforge-map-reader:0.4.3'
+    compile 'org.slf4j:slf4j-android:1.7.7'
 }

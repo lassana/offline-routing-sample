@@ -1,7 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-</LinearLayout>
+    <RelativeLayout
+            android:id="@+id/layout_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/linearLayout">
+
+        <ImageView
+                android:id="@+id/img_btn_zoom_in"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:contentDescription="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/btn_zoom_plus"
+                />
+
+        <ImageView
+                android:id="@+id/img_btn_zoom_out"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:contentDescription="@null"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/btn_zoom_minus"
+                android:layout_below="@+id/img_btn_zoom_in"
+                />
+
+        <ImageButton
+                android:id="@+id/btn_get_location"
+                android:contentDescription="@null"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginLeft="@dimen/activity_vertical_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_map_empty"
+                android:src="@drawable/ic_action_my_location"
+                android:layout_alignParentRight="true"/>
+
+    </RelativeLayout>
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:background="@drawable/bkg_holo_light"
+            android:minHeight="68dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/linearLayout">
+
+    </FrameLayout>
+
+
+</RelativeLayout>

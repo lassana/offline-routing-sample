@@ -2,6 +2,7 @@ package com.github.lassana.offlineroutingsample.downloader;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.File;
 
@@ -9,7 +10,9 @@ import java.io.File;
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
  * @since 4/28/2015.
  */
-public final class BelarusMap {
+public abstract class BelarusMap {
+
+    public static final GeoPoint GEOPOINT_CENTER = new GeoPoint(52.0801268, 23.7033696);;
 
     private BelarusMap() {
     }

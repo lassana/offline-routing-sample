@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
-import com.github.lassana.offlineroutingsample.downloader.MapDownloaderLoader;
+import com.github.lassana.offlineroutingsample.map.downloader.MapDownloaderLoader;
 import com.squareup.otto.Subscribe;
 
 

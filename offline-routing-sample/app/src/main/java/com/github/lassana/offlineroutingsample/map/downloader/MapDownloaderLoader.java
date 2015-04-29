@@ -1,4 +1,4 @@
-package com.github.lassana.offlineroutingsample.downloader;
+package com.github.lassana.offlineroutingsample.map.downloader;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;

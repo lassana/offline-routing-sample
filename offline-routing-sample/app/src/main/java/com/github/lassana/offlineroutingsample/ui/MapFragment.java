@@ -1,19 +1,27 @@
 package com.github.lassana.offlineroutingsample.ui;
 
+import android.content.res.Resources;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import com.github.lassana.offlineroutingsample.R;
-import com.github.lassana.offlineroutingsample.downloader.BelarusMap;
-import com.github.lassana.offlineroutingsample.ui.map.MapsforgeMapView;
+import com.github.lassana.offlineroutingsample.map.downloader.BelarusMap;
+import com.github.lassana.offlineroutingsample.map.view.CustomMarker;
+import com.github.lassana.offlineroutingsample.map.view.MapsforgeMapView;
 import com.github.lassana.offlineroutingsample.util.MapsConfig;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.cache.TileCache;
+import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.bonuspack.clustering.GridMarkerClusterer;
+import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
 
 import java.io.File;
 
@@ -25,6 +33,19 @@ public class MapFragment extends Fragment {
 
     private TileCache tileCache;
     private MapsforgeMapView mMapView;
+    private DefaultResourceProxyImpl mDefaultResourceProxy;
+    private Marker.OnMarkerClickListener mOnMarkerClickListener = new Marker.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker, MapView mapView) {
+            if (marker instanceof CustomMarker) {
+                CustomMarker theMarker = (CustomMarker) marker;
+                mMapView.setCenter(theMarker.getPosition());
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,6 +95,34 @@ public class MapFragment extends Fragment {
         }
         mMapView.getController().setCenter(initialCenter);
         mMapView.setCenter(initialCenter);
+
+        final GridMarkerClusterer gridMarkerClusterer = new GridMarkerClusterer(getActivity());
+        gridMarkerClusterer.setGridSize(MapsConfig.GRID_SIZE);
+        final Resources resources = getResources();
+        gridMarkerClusterer.setIcon(((BitmapDrawable) resources.getDrawable(R.drawable.image_map_cluster)).getBitmap());
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Брест-Центральный", new GeoPoint(52.100472, 23.68056), resources.getDrawable(R.drawable.pin_a_blue), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Гродно", new GeoPoint(53.686791, 23.848546), resources.getDrawable(R.drawable.pin_a_green), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Витебск", new GeoPoint(55.19611,30.18500), resources.getDrawable(R.drawable.pin_a_orange), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Минский железнодорожный вокзал", new GeoPoint(53.890667,27.55111), resources.getDrawable(R.drawable.pin_a_red), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Могилёв 1-на-Днепре", new GeoPoint(53.92611,30.33833), resources.getDrawable(R.drawable.pin_a_viola), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Гомель-Пассажирский", new GeoPoint(52.43083,30.99111), resources.getDrawable(R.drawable.pin_a_blue), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Автовокзал г. Бреста", new GeoPoint(52.098363, 23.691269), resources.getDrawable(R.drawable.pin_a_green), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Автовокзал Гродно", new GeoPoint(53.677871, 23.843805), resources.getDrawable(R.drawable.pin_a_orange), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Автовокзал \"Витебск\"", new GeoPoint(55.196350, 30.187946), resources.getDrawable(R.drawable.pin_a_red), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Центральный автовокзал", new GeoPoint(53.890068, 27.554977), resources.getDrawable(R.drawable.pin_a_viola), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Восточный автовокзал", new GeoPoint(53.87722,27.59889), resources.getDrawable(R.drawable.pin_a_blue), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Московский автовокзал", new GeoPoint(53.928603,27.636870), resources.getDrawable(R.drawable.pin_a_green), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Автовокзал Могилев", new GeoPoint(53.913231, 30.347587), resources.getDrawable(R.drawable.pin_a_orange), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        gridMarkerClusterer.add(new CustomMarker(mMapView, "Гомельский объединённый автовокзал", new GeoPoint(52.434200,30.993193), resources.getDrawable(R.drawable.pin_a_red), getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+
+        mMapView.getOverlays().add(gridMarkerClusterer);
+        mMapView.invalidate();
+    }
+
+    private DefaultResourceProxyImpl getDefaultResourceProxyImpl() {
+        return mDefaultResourceProxy == null
+                ? mDefaultResourceProxy = new DefaultResourceProxyImpl(getActivity())
+                : mDefaultResourceProxy;
     }
 
     @Override

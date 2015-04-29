@@ -1,4 +1,4 @@
-package com.github.lassana.offlineroutingsample.ui.map;
+package com.github.lassana.offlineroutingsample.map.view;
 
 import android.graphics.drawable.Drawable;
 import org.osmdroid.tileprovider.MapTile;

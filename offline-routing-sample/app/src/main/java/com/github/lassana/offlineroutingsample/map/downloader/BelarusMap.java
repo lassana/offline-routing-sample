@@ -1,10 +1,23 @@
-package com.github.lassana.offlineroutingsample.downloader;
+package com.github.lassana.offlineroutingsample.map.downloader;
 
 import android.content.Context;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
+import com.github.lassana.offlineroutingsample.App;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 import org.osmdroid.util.GeoPoint;
 
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGD;
+import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGE;
+import static com.github.lassana.offlineroutingsample.util.LogUtils.makeLogTag;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
@@ -27,7 +40,6 @@ public abstract class BelarusMap {
     public static final String NAMES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/names?raw=true";
     public static final String NODES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/nodes?raw=true";
     public static final String PROPERTIES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/properties?raw=true";
-
 
     private static File getFilesDir(final Context context) {
         File[] dirs = ContextCompat.getExternalFilesDirs(context, null);

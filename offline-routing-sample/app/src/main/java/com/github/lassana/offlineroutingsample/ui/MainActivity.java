@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import com.github.lassana.offlineroutingsample.R;
-import com.github.lassana.offlineroutingsample.downloader.BelarusMap;
+import com.github.lassana.offlineroutingsample.map.downloader.BelarusMap;
 
 
 public class MainActivity extends ActionBarActivity implements MainActivityCallback {

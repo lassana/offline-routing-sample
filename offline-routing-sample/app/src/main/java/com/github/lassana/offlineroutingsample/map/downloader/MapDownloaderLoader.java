@@ -1,6 +1,7 @@
 package com.github.lassana.offlineroutingsample.map.downloader;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.util.Pair;
 import com.github.lassana.offlineroutingsample.App;
@@ -31,7 +32,7 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
     private OkHttpClient mOkHttpClient;
     private long mDownloaded = 0;
 
-    public MapDownloaderLoader(Context context) {
+    public MapDownloaderLoader(@NonNull Context context) {
         super(context);
     }
 
@@ -71,7 +72,7 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
         return true;
     }
 
-    private boolean downloadFile(final String url, final File targetFile) {
+    private boolean downloadFile(@NonNull String url, @NonNull File targetFile) {
         LOGD(TAG, "Downloading \"" + url + "\" into \"" + targetFile + "\"...");
         Request request = new Request.Builder().url(url).tag(OKHTTP_TAG).build();
         Response response;

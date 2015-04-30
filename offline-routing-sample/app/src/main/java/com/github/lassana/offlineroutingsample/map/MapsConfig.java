@@ -1,4 +1,4 @@
-package com.github.lassana.offlineroutingsample.util;
+package com.github.lassana.offlineroutingsample.map;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}

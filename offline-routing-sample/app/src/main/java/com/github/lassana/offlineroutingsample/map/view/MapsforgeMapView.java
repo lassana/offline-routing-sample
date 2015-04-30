@@ -2,7 +2,8 @@ package com.github.lassana.offlineroutingsample.map.view;
 
 import android.content.Context;
 import android.location.Location;
-import com.github.lassana.offlineroutingsample.util.MapsConfig;
+import android.support.annotation.NonNull;
+import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.api.IMapController;
@@ -19,27 +20,32 @@ import org.osmdroid.views.MapView;
  */
 public class MapsforgeMapView extends MapView {
 
-    public MapsforgeMapView(Context context, final TileCache tileCache, final String offlineMapFilePath) {
+    public MapsforgeMapView(@NonNull Context context,
+                            @NonNull TileCache tileCache,
+                            @NonNull String offlineMapFilePath) {
         super(context, MapsConfig.TILE_SIZE, new DefaultResourceProxyImpl(context), new MapsforgeTileProvider(context, tileCache, offlineMapFilePath), null);
     }
 
-    public void setCenter(Location location) {
+    public void setCenter(@NonNull Location location) {
         setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
 
     }
 
-    public void setCenter(final GeoPoint geoPoint) {
+    public void setCenter(@NonNull GeoPoint geoPoint) {
+        final GeoPoint aGeoPoint = geoPoint;
         post(new Runnable() {
             @Override
             public void run() {
                 IMapController controller = getController();
-                controller.animateTo(geoPoint);
+                controller.animateTo(aGeoPoint);
             }
         });
     }
 
     static private class MapsforgeTileProvider extends MapTileProviderArray implements IMapTileProviderCallback {
-        private MapsforgeTileProvider(final Context context, final TileCache tileCache, final String offlineMapFilePath) {
+        private MapsforgeTileProvider(@NonNull Context context,
+                                      @NonNull TileCache tileCache,
+                                      @NonNull String offlineMapFilePath) {
             super(TileSourceFactory.getTileSource("MapquestOSM"), new SimpleRegisterReceiver(context));
             final MapsforgeOSMDroidTileProviderBase mapsforgeProvider = new MapsforgeOSMDroidTileProviderBase();
             final MapsforgeOSMTileSource tileSourceMf = new MapsforgeOSMTileSource(context, "mapsforge", offlineMapFilePath, tileCache);

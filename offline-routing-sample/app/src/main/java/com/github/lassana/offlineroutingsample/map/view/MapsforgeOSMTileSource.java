@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.InputStream;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
-import com.github.lassana.offlineroutingsample.util.MapsConfig;
+import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.Tile;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
@@ -53,7 +55,10 @@ public class MapsforgeOSMTileSource implements ITileSource {
     private int southTileBounds;
     private int northTileBounds;
 
-    public MapsforgeOSMTileSource(final Context context, final String name, final String mapFile, final TileCache cache) {
+    public MapsforgeOSMTileSource(@NonNull Context context,
+                                  @NonNull String name,
+                                  @NonNull String mapFile,
+                                  @NonNull TileCache cache) {
         this.context = context;
         this.name = name;
         this.mapFile = mapFile;
@@ -72,7 +77,7 @@ public class MapsforgeOSMTileSource implements ITileSource {
     }
 
     @Override
-    public String localizedName(ResourceProxy proxy) {
+    public String localizedName(@Nullable ResourceProxy proxy) {
         return name();
     }
 

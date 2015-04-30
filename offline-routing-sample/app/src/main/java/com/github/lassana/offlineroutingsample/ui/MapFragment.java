@@ -8,11 +8,14 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.downloader.BelarusMap;
@@ -20,7 +23,7 @@ import com.github.lassana.offlineroutingsample.map.marker.CustomMarker;
 import com.github.lassana.offlineroutingsample.map.marker.MyLocationOverlayItem;
 import com.github.lassana.offlineroutingsample.map.view.MapsforgeMapView;
 import com.github.lassana.offlineroutingsample.util.LogUtils;
-import com.github.lassana.offlineroutingsample.util.MapsConfig;
+import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.osmdroid.DefaultResourceProxyImpl;
@@ -54,12 +57,15 @@ public class MapFragment extends Fragment {
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
 
+    private View mOverviewLayout;
+    private ImageView mMarkerImageView;
+    private TextView mMarkerTextView;
+
     private Marker.OnMarkerClickListener mOnMarkerClickListener = new Marker.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker, MapView mapView) {
             if (marker instanceof CustomMarker) {
-                CustomMarker theMarker = (CustomMarker) marker;
-                mMapView.setCenter(theMarker.getPosition());
+                updateSelectedMarker((CustomMarker) marker, true);
                 return true;
             } else {
                 return false;
@@ -80,6 +86,7 @@ public class MapFragment extends Fragment {
                     return false;
                 }
             };
+
 
     private class MyLocationListener implements LocationListener {
 
@@ -104,7 +111,6 @@ public class MapFragment extends Fragment {
 
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rvalue = inflater.inflate(R.layout.fragment_map, container, false);
@@ -118,6 +124,7 @@ public class MapFragment extends Fragment {
 
         return rvalue;
     }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -148,12 +155,16 @@ public class MapFragment extends Fragment {
             }
         });
 
+        mOverviewLayout = view.findViewById(R.id.layout_route);
+        mMarkerImageView = (ImageView) view.findViewById(R.id.image_view_marker_overview);
+        mMarkerTextView = (TextView) view.findViewById(R.id.text_view_marker_title);
+
         final GeoPoint initialCenter;
         if (savedInstanceState != null) {
             mMapView.getController().setZoom(savedInstanceState.getInt("zoom_lvl"));
             initialCenter = new GeoPoint(savedInstanceState.getDouble("lati"), savedInstanceState.getDouble("longi"));
             final Location location = savedInstanceState.getParcelable("location");
-            updateUserPosition(location, false);
+            if (location != null) updateUserPosition(location, false);
         } else {
             mMapView.getController().setZoom(6);
             initialCenter = BelarusMap.GEOPOINT_CENTER;
@@ -198,13 +209,14 @@ public class MapFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        LOGD(TAG, "onSaveInstanceState; mMapView is" + (mMapView == null ? " " : " NOT ") + "null");
         if (mMapView != null) {
             final IGeoPoint mapCenter = mMapView.getMapCenter();
             outState.putDouble("lati", mapCenter.getLatitude());
             outState.putDouble("longi", mapCenter.getLongitude());
             outState.putInt("zoom_lvl", mMapView.getZoomLevel());
-            outState.putParcelable("location", mLastUserPosition);
         }
+        outState.putParcelable("location", mLastUserPosition);
         super.onSaveInstanceState(outState);
     }
 
@@ -213,7 +225,6 @@ public class MapFragment extends Fragment {
         super.onDestroy();
         if (tileCache != null) tileCache.destroy();
     }
-
 
     private void initLocationManager() {
         LOGD(TAG, "initLocationManager");
@@ -234,6 +245,7 @@ public class MapFragment extends Fragment {
         LOGD(TAG, "Location manager will be use " + usedProvider + " as location provider");
     }
 
+
     private void destroyLocationManager() {
         LOGD(TAG, "destroyLocationManager");
         if (mLocationManager != null) {
@@ -243,8 +255,7 @@ public class MapFragment extends Fragment {
         }
     }
 
-
-    private void updateUserPosition(Location location, boolean moveToCenter) {
+    private void updateUserPosition(@NonNull Location location, boolean moveToCenter) {
         if (isDetached()) return;
 
         if (mMyLocationOverlayItem != null) {
@@ -256,6 +267,15 @@ public class MapFragment extends Fragment {
         mMyLocationOverlayItem = new ItemizedIconOverlay<>(mMyLocationOverlayItemArray, onUserItemGestureListener, getDefaultResourceProxyImpl());
         mMapView.getOverlays().add(mMyLocationOverlayItem);
         if (moveToCenter) mMapView.setCenter(location);
+    }
+
+
+    private void updateSelectedMarker(@NonNull CustomMarker marker, boolean setCenter) {
+        mOverviewLayout.setVisibility(View.VISIBLE);
+        mMarkerImageView.setImageDrawable(marker.icon);
+        mMarkerTextView.setText(marker.title);
+
+        if (setCenter) mMapView.setCenter(marker.getPosition());
     }
 
 }

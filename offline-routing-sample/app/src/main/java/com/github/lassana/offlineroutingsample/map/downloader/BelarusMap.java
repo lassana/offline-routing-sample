@@ -1,23 +1,11 @@
 package com.github.lassana.offlineroutingsample.map.downloader;
 
 import android.content.Context;
-import android.support.v4.content.AsyncTaskLoader;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
-import com.github.lassana.offlineroutingsample.App;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 import org.osmdroid.util.GeoPoint;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGD;
-import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGE;
-import static com.github.lassana.offlineroutingsample.util.LogUtils.makeLogTag;
+import java.io.File;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
@@ -41,7 +29,7 @@ public abstract class BelarusMap {
     public static final String NODES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/nodes?raw=true";
     public static final String PROPERTIES_URL = "https://github.com/lassana/offline-routing-sample/blob/map/raw/belarus/properties?raw=true";
 
-    private static File getFilesDir(final Context context) {
+    private static File getFilesDir(@NonNull Context context) {
         File[] dirs = ContextCompat.getExternalFilesDirs(context, null);
         File dir = null;
         for (File directory : dirs) {
@@ -54,7 +42,7 @@ public abstract class BelarusMap {
         return dir;
     }
 
-    public static File getOfflineMapsDir(final Context context) {
+    public static File getOfflineMapsDir(@NonNull Context context) {
         final File mapsRootDir = new File(getFilesDir(context), DIR_OFFLINE_MAPS_DATA);
         if (!mapsRootDir.exists()) mapsRootDir.mkdirs();
         return mapsRootDir;
@@ -70,31 +58,31 @@ public abstract class BelarusMap {
                 && getRoutingPropertiesFile(context).exists();
     }
 
-    public static File getMapsforgeFile(final Context context) {
+    public static File getMapsforgeFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "map");
     }
 
-    public static File getRoutingEdgesFile(final Context context) {
+    public static File getRoutingEdgesFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "edges");
     }
 
-    public static File getRoutingGeometryFile(final Context context) {
+    public static File getRoutingGeometryFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "geometry");
     }
 
-    public static File getRoutingLocationIndexFile(final Context context) {
+    public static File getRoutingLocationIndexFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "locationIndex");
     }
 
-    public static File getRoutingNamesFile(final Context context) {
+    public static File getRoutingNamesFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "names");
     }
 
-    public static File getRoutingNodesFile(final Context context) {
+    public static File getRoutingNodesFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "nodes");
     }
 
-    public static File getRoutingPropertiesFile(final Context context) {
+    public static File getRoutingPropertiesFile(@NonNull Context context) {
         return new File(getOfflineMapsDir(context), "properties");
     }
 

@@ -7,4 +7,6 @@
     <string name="button_download_map">Download it</string>
     <string name="text_view_downloading_progress">Downloading: %d</string>
     <string name="button_cancel">Cancel</string>
+    <string name="error_no_location_service">Location service isn\'t available</string>
+    <string name="title_map_my_location">Current location</string>
 </resources>

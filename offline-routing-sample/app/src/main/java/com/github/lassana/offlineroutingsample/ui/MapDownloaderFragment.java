@@ -14,6 +14,8 @@ import android.widget.ViewSwitcher;
 import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.downloader.MapDownloaderLoader;
+import com.github.lassana.offlineroutingsample.util.event.MapDownloaderProgressEvent;
+import com.github.lassana.offlineroutingsample.util.event.MapSuccessfulDownloadedEvent;
 import com.squareup.otto.Subscribe;
 
 
@@ -24,7 +26,6 @@ public class MapDownloaderFragment extends Fragment {
 
     private static final int LOADER_ID = 0x1;
 
-    private MainActivityCallback mActivityCallback;
     private ViewSwitcher mViewSwitcher;
     private TextView mDownloadingProgressTextView;
     private ProgressBar mDownloadingProgressBar;
@@ -39,6 +40,7 @@ public class MapDownloaderFragment extends Fragment {
         @Override
         public void onLoadFinished(Loader<Boolean> loader, Boolean data) {
             getLoaderManager().destroyLoader(LOADER_ID);
+            App.getApplication(getActivity()).sendOttoEvent(new MapSuccessfulDownloadedEvent());
         }
 
         @Override
@@ -47,20 +49,6 @@ public class MapDownloaderFragment extends Fragment {
     };
 
     public MapDownloaderFragment() {
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (activity instanceof MainActivityCallback) {
-            mActivityCallback = (MainActivityCallback) activity;
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mActivityCallback = null;
     }
 
     @Override
@@ -124,7 +112,7 @@ public class MapDownloaderFragment extends Fragment {
     }
 
     @Subscribe
-    public void answerAvailable(final MapDownloaderLoader.Progress event) {
+    public void answerAvailable(final MapDownloaderProgressEvent event) {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

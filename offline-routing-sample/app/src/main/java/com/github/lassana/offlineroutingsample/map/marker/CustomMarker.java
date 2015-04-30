@@ -1,4 +1,4 @@
-package com.github.lassana.offlineroutingsample.map.view;
+package com.github.lassana.offlineroutingsample.map.marker;
 
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;

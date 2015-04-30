@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.util.Pair;
 import com.github.lassana.offlineroutingsample.App;
+import com.github.lassana.offlineroutingsample.util.event.MapDownloaderProgressEvent;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -30,21 +31,13 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
     private OkHttpClient mOkHttpClient;
     private long mDownloaded = 0;
 
-    public static class Progress {
-        public final int progress;
-
-        public Progress(int progress) {
-            this.progress = progress;
-        }
-    }
-
     public MapDownloaderLoader(Context context) {
         super(context);
     }
 
     protected void publishProgress(int value) {
         //LOGD(TAG, "publishProgress: " + value);
-        App.getApplication(getContext()).sendOttoEvent(new Progress(value));
+        App.getApplication(getContext()).sendOttoEvent(new MapDownloaderProgressEvent(value));
     }
 
     @Override

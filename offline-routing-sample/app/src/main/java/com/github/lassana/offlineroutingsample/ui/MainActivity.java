@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
-import com.github.lassana.offlineroutingsample.map.downloader.BelarusMap;
+import com.github.lassana.offlineroutingsample.map.downloader.AbstractMap;
 import com.github.lassana.offlineroutingsample.util.event.MapSuccessfulDownloadedEvent;
 import com.squareup.otto.Subscribe;
 
@@ -17,7 +17,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if ( savedInstanceState == null ) {
+        if (savedInstanceState == null) {
             updateContent(false);
         }
     }
@@ -36,12 +36,19 @@ public class MainActivity extends ActionBarActivity {
 
     @Subscribe
     public void onMapDownloaded(MapSuccessfulDownloadedEvent event) {
-        updateContent(true);
+        findViewById(android.R.id.content).post(new Runnable() {
+            @Override
+            public void run() {
+                updateContent(true);
+            }
+        });
     }
 
     private void updateContent(boolean force) {
-        if ( mCurrentFragment == null || force) {
-            mCurrentFragment = BelarusMap.exist(this) ? new MapFragment() : new MapDownloaderFragment();
+        if (mCurrentFragment == null || force) {
+            mCurrentFragment = AbstractMap.getSelectedMap().exist(this)
+                    ? new MapFragment()
+                    : new MapDownloaderFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, mCurrentFragment).commit();
         }
     }

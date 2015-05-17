@@ -4,8 +4,8 @@
     <string name="action_settings">Settings</string>
     <string name="text_view_no_map">No map was found</string>
     <string name="text_view_no_map_info">You can download a sample map and routing data from Internet</string>
-    <string name="button_download_map">Download it</string>
-    <string name="text_view_downloading_progress">Downloading: %d</string>
+    <string name="button_download_belarus_map">Map of Belarus (~130 MB)</string>
+    <string name="text_view_downloading_progress">Downloading: %d%%</string>
     <string name="button_cancel">Cancel</string>
     <string name="error_no_location_service">Location service isn\'t available</string>
     <string name="title_map_my_location">Current location</string>

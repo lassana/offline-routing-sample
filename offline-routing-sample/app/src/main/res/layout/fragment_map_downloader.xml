@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/button_download_map"
+                android:text="@string/button_download_belarus_map"
                 android:id="@+id/button_start_downloading"/>
 
     </LinearLayout>

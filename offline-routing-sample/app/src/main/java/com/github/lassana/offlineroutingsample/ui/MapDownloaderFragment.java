@@ -1,6 +1,5 @@
 package com.github.lassana.offlineroutingsample.ui;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -107,6 +106,7 @@ public class MapDownloaderFragment extends Fragment {
     }
 
     private void startDownloading() {
+        answerAvailable(new MapDownloaderProgressEvent(0));
         getLoaderManager().initLoader(LOADER_ID, null, mLoadManager);
         mViewSwitcher.setDisplayedChild(1);
     }

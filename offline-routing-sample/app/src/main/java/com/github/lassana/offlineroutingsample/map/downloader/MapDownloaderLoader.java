@@ -29,11 +29,14 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
     public static final int BUFFER_SIZE = 4096;
     public static final String OKHTTP_TAG = "BELARUS_MAP_OKHTTP";
 
+    private final AbstractMap mSelectedMap;
+
     private OkHttpClient mOkHttpClient;
     private long mDownloaded = 0;
 
     public MapDownloaderLoader(@NonNull Context context) {
         super(context);
+        mSelectedMap = AbstractMap.getSelectedMap();
     }
 
     protected void publishProgress(int value) {
@@ -48,14 +51,14 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
         final Context context = getContext();
 
         final List<Pair<String, File>> list = new ArrayList<>(7);
-        list.add(new Pair<>(BelarusMap.MAP_FILE_URL, BelarusMap.getMapsforgeFile(context)));
-        list.add(new Pair<>(BelarusMap.EDGES_URL, BelarusMap.getRoutingEdgesFile(context)));
-        list.add(new Pair<>(BelarusMap.GEOMETRY_URL, BelarusMap.getRoutingGeometryFile(context)));
-        list.add(new Pair<>(BelarusMap.LOCATION_INDEX_URL, BelarusMap.getRoutingLocationIndexFile(context)));
-        list.add(new Pair<>(BelarusMap.NAMES_URL, BelarusMap.getRoutingNamesFile(context)));
-        list.add(new Pair<>(BelarusMap.NODES_URL, BelarusMap.getRoutingNodesFile(context)));
-        list.add(new Pair<>(BelarusMap.PROPERTIES_URL, BelarusMap.getRoutingPropertiesFile(context)));
-        final File targetDir = BelarusMap.getOfflineMapsDir(context);
+        list.add(new Pair<>(mSelectedMap.getMapFileUrl(), mSelectedMap.getMapsforgeFile(context)));
+        list.add(new Pair<>(mSelectedMap.getEdgesUrl(), mSelectedMap.getRoutingEdgesFile(context)));
+        list.add(new Pair<>(mSelectedMap.getGeometryUrl(), mSelectedMap.getRoutingGeometryFile(context)));
+        list.add(new Pair<>(mSelectedMap.getLocationIndexUrl(), mSelectedMap.getRoutingLocationIndexFile(context)));
+        list.add(new Pair<>(mSelectedMap.getNamesUrl(), mSelectedMap.getRoutingNamesFile(context)));
+        list.add(new Pair<>(mSelectedMap.getNodesUrl(), mSelectedMap.getRoutingNodesFile(context)));
+        list.add(new Pair<>(mSelectedMap.getPropertiesUrl(), mSelectedMap.getRoutingPropertiesFile(context)));
+        final File targetDir = mSelectedMap.getOfflineMapsDir(context);
 
         mOkHttpClient = App.getApplication(context).getOkHttpClient();
         mDownloaded = 0;
@@ -89,7 +92,7 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
                 mDownloaded += len;
-                publishProgress((int) (mDownloaded * 100 / BelarusMap.MAP_SIZE));
+                publishProgress((int) (mDownloaded * 100 / mSelectedMap.getMapSize()));
             }
             inputStream.close();
             outputStream.close();

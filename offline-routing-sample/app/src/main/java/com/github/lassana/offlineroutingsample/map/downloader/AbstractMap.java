@@ -1,8 +1,14 @@
 package com.github.lassana.offlineroutingsample.map.downloader;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import com.github.lassana.offlineroutingsample.R;
+import com.github.lassana.offlineroutingsample.map.MapsConfig;
+import com.github.lassana.offlineroutingsample.map.marker.CustomMarker;
+import com.github.lassana.offlineroutingsample.map.marker.CustomMarkerModel;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.bonuspack.clustering.GridMarkerClusterer;
 import org.osmdroid.bonuspack.overlays.Marker;
@@ -10,12 +16,22 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
  * @since 5/17/15.
  */
 public abstract class AbstractMap {
+
+    private static WeakReference<AbstractMap> mReference;
+
+    public static AbstractMap instance() {
+        if ( mReference == null || mReference.get() == null) {
+            mReference = new WeakReference<AbstractMap>(new CyprusMap());
+        }
+        return mReference.get();
+    }
 
     protected abstract String getDirectoryName();
     protected abstract long getMapSize();
@@ -26,7 +42,6 @@ public abstract class AbstractMap {
     protected abstract String getNamesUrl();
     protected abstract String getNodesUrl();
     protected abstract String getPropertiesUrl();
-
 
     private File getFilesDir(@NonNull Context context) {
         File[] dirs = ContextCompat.getExternalFilesDirs(context, null);
@@ -87,11 +102,28 @@ public abstract class AbstractMap {
 
     public abstract GeoPoint getCenterGeoPoint();
 
-    public static AbstractMap getSelectedMap() {
-        return new CyprusMap();
+    public GridMarkerClusterer createMarkersCluster(@NonNull MapView mapView,
+                                                      @NonNull ResourceProxy resourceProxy,
+                                                      @NonNull Marker.OnMarkerClickListener listener) {
+        final GridMarkerClusterer gridMarkerClusterer = new GridMarkerClusterer(mapView.getContext());
+        gridMarkerClusterer.setGridSize(MapsConfig.GRID_SIZE);
+
+        final Resources resources = mapView.getContext().getResources();
+        if (resources == null) throw new RuntimeException("Cannot get resources from context");
+        final BitmapDrawable clusterDrawable = ((BitmapDrawable) resources.getDrawable(R.drawable.image_map_cluster));
+        if (clusterDrawable == null) {
+            throw new RuntimeException("Cannot get Drawable from resource");
+        }
+        gridMarkerClusterer.setIcon(clusterDrawable.getBitmap());
+
+        for (CustomMarkerModel model : getCustomMarkerModels()) {
+            gridMarkerClusterer.add(new CustomMarker(model, mapView, resources, resourceProxy, listener));
+        }
+
+        return gridMarkerClusterer;
     }
 
-    public abstract GridMarkerClusterer createMarkersCluster(@NonNull MapView mapView,
-                                                      @NonNull ResourceProxy resourceProxy,
-                                                      @NonNull Marker.OnMarkerClickListener listener);
+    protected abstract CustomMarkerModel[] getCustomMarkerModels();
+
+    public abstract int getDefaultZoom();
 }

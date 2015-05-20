@@ -9,4 +9,5 @@
     <string name="button_cancel">Cancel</string>
     <string name="error_no_location_service">Location service isn\'t available</string>
     <string name="title_map_my_location">Current location</string>
+    <string name="button_find_route">Find route</string>
 </resources>

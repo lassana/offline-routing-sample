@@ -36,7 +36,7 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
 
     public MapDownloaderLoader(@NonNull Context context) {
         super(context);
-        mSelectedMap = AbstractMap.getSelectedMap();
+        mSelectedMap = AbstractMap.instance();
     }
 
     protected void publishProgress(int value) {
@@ -103,8 +103,6 @@ public class MapDownloaderLoader extends AsyncTaskLoader<Boolean> {
         LOGD(TAG, "Downloaded.");
         return true;
     }
-
-
 
     @Override
     protected void onStartLoading() {

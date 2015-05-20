@@ -6,7 +6,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,7 @@ import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import com.github.lassana.offlineroutingsample.map.downloader.AbstractMap;
 import com.github.lassana.offlineroutingsample.map.marker.CustomMarker;
+import com.github.lassana.offlineroutingsample.map.marker.CustomMarkerModel;
 import com.github.lassana.offlineroutingsample.map.marker.MyLocationOverlayItem;
 import com.github.lassana.offlineroutingsample.map.view.MapsforgeMapView;
 import com.github.lassana.offlineroutingsample.util.LogUtils;
@@ -45,26 +45,29 @@ public class MapFragment extends Fragment {
 
     private static final String TAG = LogUtils.makeLogTag(MapFragment.class);
 
-    private AbstractMap mMap = AbstractMap.getSelectedMap();
-
     private TileCache tileCache;
     private MapsforgeMapView mMapView;
     private DefaultResourceProxyImpl mDefaultResourceProxy;
     private ItemizedIconOverlay<MyLocationOverlayItem> mMyLocationOverlayItem;
 
     private Location mLastUserPosition;
+    private CustomMarkerModel mTarget;
+
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
 
     private View mOverviewLayout;
     private ImageView mMarkerImageView;
     private TextView mMarkerTextView;
+    private TextView mMarkerDescriptionTextView;
 
     private Marker.OnMarkerClickListener mOnMarkerClickListener = new Marker.OnMarkerClickListener() {
         @Override
         public boolean onMarkerClick(Marker marker, MapView mapView) {
             if (marker instanceof CustomMarker) {
-                updateSelectedMarker((CustomMarker) marker, true);
+                final CustomMarker cMarker = (CustomMarker) marker;
+                mTarget = cMarker.model;
+                updateSelectedMarker(true);
                 return true;
             } else {
                 return false;
@@ -92,7 +95,7 @@ public class MapFragment extends Fragment {
         public void onLocationChanged(Location location) {
             LOGD(TAG, "onLocationChanged: " + location);
             mLastUserPosition = location;
-            updateUserPosition(location, true);
+            updateUserPosition(true);
             destroyLocationManager();
         }
 
@@ -115,7 +118,7 @@ public class MapFragment extends Fragment {
         final View rvalue = inflater.inflate(R.layout.fragment_map, container, false);
 
         tileCache = AndroidUtil.createTileCache(getActivity(), "mapcache", MapsConfig.TILE_SIZE, MapsConfig.SCREEN_RATION, MapsConfig.OVERDRAW);
-        final File mapFile = mMap.getMapsforgeFile(getActivity());
+        final File mapFile = AbstractMap.instance().getMapsforgeFile(getActivity());
         mMapView = new MapsforgeMapView(getActivity(), tileCache, mapFile.getAbsolutePath());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         RelativeLayout forMap = (RelativeLayout) rvalue.findViewById(R.id.layout_map);
@@ -123,7 +126,6 @@ public class MapFragment extends Fragment {
 
         return rvalue;
     }
-
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -157,22 +159,24 @@ public class MapFragment extends Fragment {
         mOverviewLayout = view.findViewById(R.id.layout_route);
         mMarkerImageView = (ImageView) view.findViewById(R.id.image_view_marker_overview);
         mMarkerTextView = (TextView) view.findViewById(R.id.text_view_marker_title);
+        mMarkerDescriptionTextView = (TextView) view.findViewById(R.id.text_view_marker_description);
 
         final GeoPoint initialCenter;
         if (savedInstanceState != null) {
             mMapView.getController().setZoom(savedInstanceState.getInt("zoom_lvl"));
             initialCenter = new GeoPoint(savedInstanceState.getDouble("lati"), savedInstanceState.getDouble("longi"));
-            final Location location = savedInstanceState.getParcelable("location");
-            if (location != null) updateUserPosition(location, false);
+            mLastUserPosition = savedInstanceState.getParcelable("location");
+            mTarget = savedInstanceState.getParcelable("target");
+            updateUserPosition(false);
+            updateSelectedMarker(false);
         } else {
-            mMapView.getController().setZoom(6);
-            initialCenter = mMap.getCenterGeoPoint();
+            mMapView.getController().setZoom(AbstractMap.instance().getDefaultZoom());
+            initialCenter = AbstractMap.instance().getCenterGeoPoint();
         }
         mMapView.getController().setCenter(initialCenter);
         mMapView.setCenter(initialCenter);
 
-
-        mMapView.getOverlays().add(mMap.createMarkersCluster(mMapView, getDefaultResourceProxyImpl(), mOnMarkerClickListener));
+        mMapView.getOverlays().add(AbstractMap.instance().createMarkersCluster(mMapView, getDefaultResourceProxyImpl(), mOnMarkerClickListener));
         mMapView.invalidate();
     }
 
@@ -198,6 +202,7 @@ public class MapFragment extends Fragment {
             outState.putInt("zoom_lvl", mMapView.getZoomLevel());
         }
         outState.putParcelable("location", mLastUserPosition);
+        outState.putParcelable("target", mTarget);
         super.onSaveInstanceState(outState);
     }
 
@@ -236,27 +241,46 @@ public class MapFragment extends Fragment {
         }
     }
 
-    private void updateUserPosition(@NonNull Location location, boolean moveToCenter) {
+    private void updateUserPosition(boolean moveToCenter) {
         if (isDetached()) return;
 
         if (mMyLocationOverlayItem != null) {
             mMapView.getOverlays().remove(mMyLocationOverlayItem);
         }
-        final List<MyLocationOverlayItem> mMyLocationOverlayItemArray = new ArrayList<>();
-        MyLocationOverlayItem object = new MyLocationOverlayItem(new GeoPoint(location.getLatitude(), location.getLongitude()), getResources(), R.string.title_map_my_location, R.drawable.image_my_location);
-        mMyLocationOverlayItemArray.add(object);
-        mMyLocationOverlayItem = new ItemizedIconOverlay<>(mMyLocationOverlayItemArray, onUserItemGestureListener, getDefaultResourceProxyImpl());
-        mMapView.getOverlays().add(mMyLocationOverlayItem);
-        if (moveToCenter) mMapView.setCenter(location);
+        if ( mLastUserPosition != null ) {
+            final List<MyLocationOverlayItem> mMyLocationOverlayItemArray = new ArrayList<>();
+            MyLocationOverlayItem object =
+                    new MyLocationOverlayItem(new GeoPoint(mLastUserPosition.getLatitude(), mLastUserPosition.getLongitude()),
+                            getResources(),
+                            R.string.title_map_my_location,
+                            R.drawable.image_my_location);
+            mMyLocationOverlayItemArray.add(object);
+            mMyLocationOverlayItem =
+                    new ItemizedIconOverlay<>(mMyLocationOverlayItemArray,
+                            onUserItemGestureListener,
+                            getDefaultResourceProxyImpl());
+            mMapView.getOverlays().add(mMyLocationOverlayItem);
+            if (moveToCenter) mMapView.setCenter(mLastUserPosition);
+            updateDistanceToTarget();
+        }
     }
 
+    private void updateSelectedMarker(boolean moveToCenter) {
+        if ( mTarget != null ) {
+            mOverviewLayout.setVisibility(View.VISIBLE);
+            mMarkerImageView.setImageDrawable(mTarget.getDrawable(getResources()));
+            mMarkerTextView.setText(mTarget.getTitle());
+            updateDistanceToTarget();
 
-    private void updateSelectedMarker(@NonNull CustomMarker marker, boolean setCenter) {
-        mOverviewLayout.setVisibility(View.VISIBLE);
-        mMarkerImageView.setImageDrawable(marker.icon);
-        mMarkerTextView.setText(marker.title);
+            if (moveToCenter) mMapView.setCenter(mTarget.getLocation());
+        }
+    }
 
-        if (setCenter) mMapView.setCenter(marker.getPosition());
+    private void updateDistanceToTarget() {
+        if ( mLastUserPosition != null && mTarget != null && mTarget.getLocation() != null) {
+            float distance = mLastUserPosition.distanceTo(mTarget.getLocation());
+            mMarkerDescriptionTextView.setText(String.format("Distance: %.2f km", distance/1000));
+        }
     }
 
 }

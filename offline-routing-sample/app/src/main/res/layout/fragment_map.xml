@@ -6,8 +6,7 @@
     <RelativeLayout
             android:id="@+id/layout_map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/linearLayout">
+            android:layout_height="match_parent">
 
         <ImageView
                 android:id="@+id/img_btn_zoom_in"
@@ -51,6 +50,7 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:background="@drawable/bkg_holo_light"
             android:minHeight="68dp"
             android:orientation="horizontal"
@@ -91,7 +91,7 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@android:color/secondary_text_light"
-                    android:id="@+id/text_view_description"/>
+                    android:id="@+id/text_view_marker_description"/>
 
         </LinearLayout>
 
@@ -105,7 +105,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:text="Find route"/>
+                android:text="@string/button_find_route"/>
 
     </LinearLayout>
 

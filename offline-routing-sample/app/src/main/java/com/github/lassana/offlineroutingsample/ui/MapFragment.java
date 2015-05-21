@@ -7,21 +7,23 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
+import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import com.github.lassana.offlineroutingsample.map.downloader.AbstractMap;
 import com.github.lassana.offlineroutingsample.map.marker.CustomMarker;
 import com.github.lassana.offlineroutingsample.map.marker.CustomMarkerModel;
 import com.github.lassana.offlineroutingsample.map.marker.MyLocationOverlayItem;
+import com.github.lassana.offlineroutingsample.map.routing.RouteLoader;
 import com.github.lassana.offlineroutingsample.map.view.MapsforgeMapView;
 import com.github.lassana.offlineroutingsample.util.LogUtils;
+import com.github.lassana.offlineroutingsample.util.event.MapSuccessfulDownloadedEvent;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.osmdroid.DefaultResourceProxyImpl;
@@ -57,6 +59,7 @@ public class MapFragment extends Fragment {
     private MyLocationListener mLocationListener;
 
     private View mOverviewLayout;
+    private Button mFindRouteButton;
     private ImageView mMarkerImageView;
     private TextView mMarkerTextView;
     private TextView mMarkerDescriptionTextView;
@@ -113,6 +116,24 @@ public class MapFragment extends Fragment {
 
     }
 
+    private final LoaderManager.LoaderCallbacks<RouteLoader.Result> mRouteLoadManager = new LoaderManager.LoaderCallbacks<RouteLoader.Result>() {
+        @Override
+        public Loader<RouteLoader.Result> onCreateLoader(int id, Bundle args) {
+            return new RouteLoader(getActivity(), mLastUserPosition, mTarget.getLocation());
+        }
+
+        @Override
+        public void onLoadFinished(Loader<RouteLoader.Result> loader, RouteLoader.Result data) {
+            getLoaderManager().destroyLoader(R.id.loader_find_route);
+            App.getApplication(getActivity()).sendOttoEvent(new MapSuccessfulDownloadedEvent());
+        }
+
+        @Override
+        public void onLoaderReset(Loader<RouteLoader.Result> loader) {
+
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rvalue = inflater.inflate(R.layout.fragment_map, container, false);
@@ -157,6 +178,7 @@ public class MapFragment extends Fragment {
         });
 
         mOverviewLayout = view.findViewById(R.id.layout_route);
+        mFindRouteButton = (Button) view.findViewById(R.id.button_find_route);
         mMarkerImageView = (ImageView) view.findViewById(R.id.image_view_marker_overview);
         mMarkerTextView = (TextView) view.findViewById(R.id.text_view_marker_title);
         mMarkerDescriptionTextView = (TextView) view.findViewById(R.id.text_view_marker_description);
@@ -173,11 +195,25 @@ public class MapFragment extends Fragment {
             mMapView.getController().setZoom(AbstractMap.instance().getDefaultZoom());
             initialCenter = AbstractMap.instance().getCenterGeoPoint();
         }
+        updateFindRouteButtonState();
+
         mMapView.getController().setCenter(initialCenter);
         mMapView.setCenter(initialCenter);
 
         mMapView.getOverlays().add(AbstractMap.instance().createMarkersCluster(mMapView, getDefaultResourceProxyImpl(), mOnMarkerClickListener));
         mMapView.invalidate();
+    }
+
+    private void updateFindRouteButtonState() {
+        if (getLoaderManager().getLoader(R.id.loader_find_route) != null) {
+            mFindRouteButton.setEnabled(false);
+        } else {
+            if ( mLastUserPosition != null && mTarget != null ) {
+                mFindRouteButton.setEnabled(true);
+            } else {
+                mFindRouteButton.setEnabled(false);
+            }
+        }
     }
 
     private DefaultResourceProxyImpl getDefaultResourceProxyImpl() {
@@ -262,6 +298,7 @@ public class MapFragment extends Fragment {
             mMapView.getOverlays().add(mMyLocationOverlayItem);
             if (moveToCenter) mMapView.setCenter(mLastUserPosition);
             updateDistanceToTarget();
+            updateFindRouteButtonState();
         }
     }
 
@@ -273,6 +310,7 @@ public class MapFragment extends Fragment {
             updateDistanceToTarget();
 
             if (moveToCenter) mMapView.setCenter(mTarget.getLocation());
+            updateFindRouteButtonState();
         }
     }
 

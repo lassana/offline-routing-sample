@@ -23,8 +23,6 @@ import com.squareup.otto.Subscribe;
  */
 public class MapDownloaderFragment extends Fragment {
 
-    private static final int LOADER_ID = 0x1;
-
     private ViewSwitcher mViewSwitcher;
     private TextView mDownloadingProgressTextView;
     private ProgressBar mDownloadingProgressBar;
@@ -38,7 +36,7 @@ public class MapDownloaderFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<Boolean> loader, Boolean data) {
-            getLoaderManager().destroyLoader(LOADER_ID);
+            getLoaderManager().destroyLoader(R.id.loader_map_downloader);
             App.getApplication(getActivity()).sendOttoEvent(new MapSuccessfulDownloadedEvent());
         }
 
@@ -64,7 +62,7 @@ public class MapDownloaderFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        getLoaderManager().destroyLoader(LOADER_ID);
+        getLoaderManager().destroyLoader(R.id.loader_map_downloader);
     }
 
     @Override
@@ -82,10 +80,10 @@ public class MapDownloaderFragment extends Fragment {
         view.findViewById(R.id.button_cancel_downloading).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StopDownloading();
+                stopDownloading();
             }
         });
-        mViewSwitcher.setDisplayedChild(getLoaderManager().getLoader(LOADER_ID) == null ? 0 : 1);
+        mViewSwitcher.setDisplayedChild(getLoaderManager().getLoader(R.id.loader_map_downloader) == null ? 0 : 1);
     }
 
     @Override
@@ -100,14 +98,14 @@ public class MapDownloaderFragment extends Fragment {
         App.getApplication(getActivity()).registerOttoBus(this);
     }
 
-    private void StopDownloading() {
-        getLoaderManager().destroyLoader(LOADER_ID);
+    private void stopDownloading() {
+        getLoaderManager().destroyLoader(R.id.loader_map_downloader);
         mViewSwitcher.setDisplayedChild(0);
     }
 
     private void startDownloading() {
         answerAvailable(new MapDownloaderProgressEvent(0));
-        getLoaderManager().initLoader(LOADER_ID, null, mLoadManager);
+        getLoaderManager().initLoader(R.id.loader_map_downloader, null, mLoadManager);
         mViewSwitcher.setDisplayedChild(1);
     }
 

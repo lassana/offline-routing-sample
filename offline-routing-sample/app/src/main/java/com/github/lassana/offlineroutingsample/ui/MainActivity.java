@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void updateContent(boolean force) {
         if (mCurrentFragment == null || force) {
-            mCurrentFragment = AbstractMap.selected().exist(this)
+            mCurrentFragment = AbstractMap.instance().exist(this)
                     ? new MapFragment()
                     : new MapDownloaderFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, mCurrentFragment).commit();

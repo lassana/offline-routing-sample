@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import com.github.lassana.offlineroutingsample.App;
 import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.MapsConfig;
 import com.github.lassana.offlineroutingsample.map.downloader.AbstractMap;
@@ -23,7 +22,6 @@ import com.github.lassana.offlineroutingsample.map.marker.MyLocationOverlayItem;
 import com.github.lassana.offlineroutingsample.map.routing.RouteLoader;
 import com.github.lassana.offlineroutingsample.map.view.MapsforgeMapView;
 import com.github.lassana.offlineroutingsample.util.LogUtils;
-import com.github.lassana.offlineroutingsample.util.event.MapSuccessfulDownloadedEvent;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.osmdroid.DefaultResourceProxyImpl;
@@ -125,7 +123,6 @@ public class MapFragment extends Fragment {
         @Override
         public void onLoadFinished(Loader<RouteLoader.Result> loader, RouteLoader.Result data) {
             getLoaderManager().destroyLoader(R.id.loader_find_route);
-            App.getApplication(getActivity()).sendOttoEvent(new MapSuccessfulDownloadedEvent());
         }
 
         @Override
@@ -183,6 +180,18 @@ public class MapFragment extends Fragment {
         mMarkerTextView = (TextView) view.findViewById(R.id.text_view_marker_title);
         mMarkerDescriptionTextView = (TextView) view.findViewById(R.id.text_view_marker_description);
 
+        mFindRouteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if ( getLoaderManager().getLoader(R.id.loader_find_route) == null
+                        && mTarget != null
+                        && mTarget.getLocation() != null
+                        && mLastUserPosition != null ) {
+                    getLoaderManager().initLoader(R.id.loader_find_route, null, mRouteLoadManager);
+                }
+            }
+        });
+
         final GeoPoint initialCenter;
         if (savedInstanceState != null) {
             mMapView.getController().setZoom(savedInstanceState.getInt("zoom_lvl"));
@@ -190,11 +199,11 @@ public class MapFragment extends Fragment {
             mLastUserPosition = savedInstanceState.getParcelable("location");
             mTarget = savedInstanceState.getParcelable("target");
             updateUserPosition(false);
-            updateSelectedMarker(false);
         } else {
             mMapView.getController().setZoom(AbstractMap.instance().getDefaultZoom());
             initialCenter = AbstractMap.instance().getCenterGeoPoint();
         }
+        updateSelectedMarker(false);
         updateFindRouteButtonState();
 
         mMapView.getController().setCenter(initialCenter);
@@ -311,6 +320,8 @@ public class MapFragment extends Fragment {
 
             if (moveToCenter) mMapView.setCenter(mTarget.getLocation());
             updateFindRouteButtonState();
+        } else {
+            mOverviewLayout.setVisibility(View.GONE);
         }
     }
 

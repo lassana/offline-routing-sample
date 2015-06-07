@@ -50,7 +50,7 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
+            android:visibility="visible"
             android:background="@drawable/bkg_holo_light"
             android:minHeight="68dp"
             android:orientation="horizontal"
@@ -77,11 +77,13 @@
                 android:layout_marginLeft="@dimen/spacing_medium"
                 android:layout_marginStart="@dimen/spacing_medium"
                 android:layout_gravity="center"
+                android:layout_weight="1"
                 android:orientation="vertical">
 
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/primary_text_light"
                     android:id="@+id/text_view_marker_title"/>
@@ -89,6 +91,7 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@android:color/secondary_text_light"
                     android:id="@+id/text_view_marker_description"/>
@@ -97,8 +100,7 @@
 
         <Space
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_height="wrap_content"/>
 
         <Button
                 android:id="@+id/button_find_route"

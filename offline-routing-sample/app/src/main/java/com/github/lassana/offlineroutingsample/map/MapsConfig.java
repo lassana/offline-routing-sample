@@ -13,5 +13,6 @@ public abstract class MapsConfig {
     public static final float SCREEN_RATION = 1.0f;
     public static final float OVERDRAW = 1.5f;
     public static final int GRID_SIZE = 150;
+    public static final String TILE_CACHE_ID = "mapcache";
 
 }

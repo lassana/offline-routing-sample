@@ -3,7 +3,10 @@ package com.github.lassana.offlineroutingsample.map.routing;
 import android.content.Context;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import com.github.lassana.offlineroutingsample.R;
 import com.github.lassana.offlineroutingsample.map.downloader.AbstractMap;
 import com.github.lassana.offlineroutingsample.util.LogUtils;
 import com.graphhopper.GHRequest;
@@ -17,9 +20,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGE;
-import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGI;
-import static com.github.lassana.offlineroutingsample.util.LogUtils.LOGW;
+import static com.github.lassana.offlineroutingsample.util.LogUtils.*;
 
 /**
  * @author Nikolai Doronin {@literal <lassana.nd@gmail.com>}
@@ -117,6 +118,19 @@ public class RouteLoader extends AsyncTaskLoader<RouteLoader.Result> {
             return Result.INTERNAL_ERROR;
         }
 
+    }
+
+
+    @Override
+    protected void onStartLoading() {
+        super.onStartLoading();
+        LOGD(TAG, "onStartLoading");
+        forceLoad();
+    }
+
+    public static boolean isRunning(@NonNull LoaderManager loaderManager) {
+        final Loader<Object> loader = loaderManager.getLoader(R.id.loader_find_route);
+        return loader != null && loader.isStarted();
     }
 
 }

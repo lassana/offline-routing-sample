@@ -30,6 +30,7 @@ import org.osmdroid.bonuspack.overlays.Marker;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.PathOverlay;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,6 +46,15 @@ public class MapFragment extends Fragment {
 
     private static final String TAG = LogUtils.makeLogTag(MapFragment.class);
 
+    private interface SavedState {
+        String ZOOM_LVL = "zoom_lvl";
+        String LATI = "lati";
+        String LONGI = "longi";
+        String LOCATION = "location";
+        String TARGET = "target";
+        String ROUTE = "route";
+    }
+
     private TileCache tileCache;
     private MapsforgeMapView mMapView;
     private DefaultResourceProxyImpl mDefaultResourceProxy;
@@ -52,6 +62,8 @@ public class MapFragment extends Fragment {
 
     private Location mLastUserPosition;
     private CustomMarkerModel mTarget;
+    private PathOverlay mPathOverlay;
+    private ArrayList<GeoPoint> mCurrentRouteGeoPoints;
 
     private LocationManager mLocationManager;
     private MyLocationListener mLocationListener;
@@ -114,7 +126,8 @@ public class MapFragment extends Fragment {
 
     }
 
-    private final LoaderManager.LoaderCallbacks<RouteLoader.Result> mRouteLoadManager = new LoaderManager.LoaderCallbacks<RouteLoader.Result>() {
+    private final LoaderManager.LoaderCallbacks<RouteLoader.Result> mRouteLoadManager
+            = new LoaderManager.LoaderCallbacks<RouteLoader.Result>() {
         @Override
         public Loader<RouteLoader.Result> onCreateLoader(int id, Bundle args) {
             return new RouteLoader(getActivity(), mLastUserPosition, mTarget.getLocation());
@@ -122,7 +135,15 @@ public class MapFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<RouteLoader.Result> loader, RouteLoader.Result data) {
+            mCurrentRouteGeoPoints = new ArrayList<>(data.getGeoPoints());
             getLoaderManager().destroyLoader(R.id.loader_find_route);
+            mMapView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mFindRouteButton.setEnabled(true);
+                    updateCurrentRoute();
+                }
+            });
         }
 
         @Override
@@ -135,7 +156,7 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rvalue = inflater.inflate(R.layout.fragment_map, container, false);
 
-        tileCache = AndroidUtil.createTileCache(getActivity(), "mapcache", MapsConfig.TILE_SIZE, MapsConfig.SCREEN_RATION, MapsConfig.OVERDRAW);
+        tileCache = AndroidUtil.createTileCache(getActivity(), MapsConfig.TILE_CACHE_ID, MapsConfig.TILE_SIZE, MapsConfig.SCREEN_RATION, MapsConfig.OVERDRAW);
         final File mapFile = AbstractMap.instance().getMapsforgeFile(getActivity());
         mMapView = new MapsforgeMapView(getActivity(), tileCache, mapFile.getAbsolutePath());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -183,28 +204,38 @@ public class MapFragment extends Fragment {
         mFindRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if ( getLoaderManager().getLoader(R.id.loader_find_route) == null
-                        && mTarget != null
+                if (mTarget != null
                         && mTarget.getLocation() != null
-                        && mLastUserPosition != null ) {
+                        && mLastUserPosition != null) {
                     getLoaderManager().initLoader(R.id.loader_find_route, null, mRouteLoadManager);
+                    mFindRouteButton.setEnabled(false);
                 }
             }
         });
 
         final GeoPoint initialCenter;
         if (savedInstanceState != null) {
-            mMapView.getController().setZoom(savedInstanceState.getInt("zoom_lvl"));
-            initialCenter = new GeoPoint(savedInstanceState.getDouble("lati"), savedInstanceState.getDouble("longi"));
-            mLastUserPosition = savedInstanceState.getParcelable("location");
-            mTarget = savedInstanceState.getParcelable("target");
+            mMapView.getController().setZoom(savedInstanceState.getInt(SavedState.ZOOM_LVL));
+            initialCenter = new GeoPoint(savedInstanceState.getDouble(SavedState.LATI), savedInstanceState.getDouble(SavedState.LONGI));
+            mLastUserPosition = savedInstanceState.getParcelable(SavedState.LOCATION);
+            mTarget = savedInstanceState.getParcelable(SavedState.TARGET);
+            mCurrentRouteGeoPoints = savedInstanceState.getParcelableArrayList(SavedState.ROUTE);
             updateUserPosition(false);
         } else {
             mMapView.getController().setZoom(AbstractMap.instance().getDefaultZoom());
             initialCenter = AbstractMap.instance().getCenterGeoPoint();
+            /*
+            mLastUserPosition = new Location("");
+            mLastUserPosition.setLatitude(35.159722);
+            mLastUserPosition.setLongitude(33.377778);
+            updateUserPosition(false);
+            */
         }
         updateSelectedMarker(false);
         updateFindRouteButtonState();
+        updateCurrentRoute();
+
+        mFindRouteButton.setEnabled(!RouteLoader.isRunning(getLoaderManager()));
 
         mMapView.getController().setCenter(initialCenter);
         mMapView.setCenter(initialCenter);
@@ -217,7 +248,7 @@ public class MapFragment extends Fragment {
         if (getLoaderManager().getLoader(R.id.loader_find_route) != null) {
             mFindRouteButton.setEnabled(false);
         } else {
-            if ( mLastUserPosition != null && mTarget != null ) {
+            if (mLastUserPosition != null && mTarget != null) {
                 mFindRouteButton.setEnabled(true);
             } else {
                 mFindRouteButton.setEnabled(false);
@@ -242,12 +273,13 @@ public class MapFragment extends Fragment {
         LOGD(TAG, "onSaveInstanceState; mMapView is" + (mMapView == null ? " " : " NOT ") + "null");
         if (mMapView != null) {
             final IGeoPoint mapCenter = mMapView.getMapCenter();
-            outState.putDouble("lati", mapCenter.getLatitude());
-            outState.putDouble("longi", mapCenter.getLongitude());
-            outState.putInt("zoom_lvl", mMapView.getZoomLevel());
+            outState.putDouble(SavedState.LATI, mapCenter.getLatitude());
+            outState.putDouble(SavedState.LONGI, mapCenter.getLongitude());
+            outState.putInt(SavedState.ZOOM_LVL, mMapView.getZoomLevel());
         }
-        outState.putParcelable("location", mLastUserPosition);
-        outState.putParcelable("target", mTarget);
+        outState.putParcelable(SavedState.LOCATION, mLastUserPosition);
+        outState.putParcelable(SavedState.TARGET, mTarget);
+        outState.putParcelableArrayList(SavedState.ROUTE, mCurrentRouteGeoPoints);
         super.onSaveInstanceState(outState);
     }
 
@@ -261,17 +293,9 @@ public class MapFragment extends Fragment {
         LOGD(TAG, "initLocationManager");
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         mLocationListener = new MyLocationListener();
-        /*if (mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            LOGD(TAG, "NETWORK_PROVIDER is enabled");
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-        }
-        if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            LOGD(TAG, "GPS_PROVIDER is enabled");
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
-        }*/
-        final Criteria crit = new Criteria();
-        crit.setAccuracy(Criteria.NO_REQUIREMENT);
-        final String usedProvider = mLocationManager.getBestProvider(crit, true);
+        final Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.NO_REQUIREMENT);
+        final String usedProvider = mLocationManager.getBestProvider(criteria, true);
         mLocationManager.requestLocationUpdates(usedProvider, 0, 1, mLocationListener);
         LOGD(TAG, "Location manager will be use " + usedProvider + " as location provider");
     }
@@ -292,7 +316,7 @@ public class MapFragment extends Fragment {
         if (mMyLocationOverlayItem != null) {
             mMapView.getOverlays().remove(mMyLocationOverlayItem);
         }
-        if ( mLastUserPosition != null ) {
+        if (mLastUserPosition != null) {
             final List<MyLocationOverlayItem> mMyLocationOverlayItemArray = new ArrayList<>();
             MyLocationOverlayItem object =
                     new MyLocationOverlayItem(new GeoPoint(mLastUserPosition.getLatitude(), mLastUserPosition.getLongitude()),
@@ -312,7 +336,7 @@ public class MapFragment extends Fragment {
     }
 
     private void updateSelectedMarker(boolean moveToCenter) {
-        if ( mTarget != null ) {
+        if (mTarget != null) {
             mOverviewLayout.setVisibility(View.VISIBLE);
             mMarkerImageView.setImageDrawable(mTarget.getDrawable(getResources()));
             mMarkerTextView.setText(mTarget.getTitle());
@@ -326,10 +350,24 @@ public class MapFragment extends Fragment {
     }
 
     private void updateDistanceToTarget() {
-        if ( mLastUserPosition != null && mTarget != null && mTarget.getLocation() != null) {
+        if (mLastUserPosition != null && mTarget != null && mTarget.getLocation() != null) {
             float distance = mLastUserPosition.distanceTo(mTarget.getLocation());
-            mMarkerDescriptionTextView.setText(String.format("Distance: %.2f km", distance/1000));
+            mMarkerDescriptionTextView.setText(String.format("Distance: %.2f km", distance / 1000));
         }
     }
 
+    private void updateCurrentRoute() {
+        if (mPathOverlay != null) {
+            mMapView.getOverlays().remove(mPathOverlay);
+        }
+        if (mCurrentRouteGeoPoints != null) {
+            final int color = getResources().getColor(android.R.color.holo_red_dark);
+            mPathOverlay = new PathOverlay(color, 5.0f, getDefaultResourceProxyImpl());
+            for (GeoPoint geoPoint : mCurrentRouteGeoPoints) {
+                mPathOverlay.addPoint(geoPoint);
+            }
+            mMapView.getOverlays().add(mPathOverlay);
+            mMapView.invalidate();
+        }
+    }
 }

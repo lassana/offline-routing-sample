@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="loader_map_downloader" type="id">1</item>
+    <item name="loader_find_route" type="id">2</item>
+</resources>
